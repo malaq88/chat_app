@@ -1,0 +1,32 @@
+/* app/static/main.css */
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    color: #333;
+}
+
+form p {
+    margin: 10px 0;
+}
+
+span {
+    color: red;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+}
+
+input, button {
+    padding: 10px;
+    margin: 5px 0;
+}

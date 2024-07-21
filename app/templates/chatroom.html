@@ -1,0 +1,156 @@
+<!-- app/templates/chatroom.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ room.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+        .messages-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: #ffffff;
+            border-bottom: 2px solid #ccc;
+            margin-bottom: 50px; /* Space for the fixed form */
+        }
+        .messages-box ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .messages-box li {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+            margin: 5px auto;
+        }
+        .messages-box .message {
+            padding: 10px;
+            border-radius: 4px;
+            color: #000;
+        }
+        .messages-box .my-message {
+            background-color: #d3d3d3; /* Color for current user's messages */
+            align-self: flex-end;
+        }
+        .messages-box .other-message {
+            background-color: #f0f0f0; /* Color for other users' messages */
+            align-self: flex-start;
+        }
+        .messages-box .message-time {
+            font-size: 0.75em;
+            color: #888;
+            margin-top: 5px;
+            text-align: right;
+        }
+        .form-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            padding: 10px;
+            border-top: 2px solid #ccc;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        }
+        .form-container input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .form-container button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', () => {
+            var socket = io.connect('http://' + document.domain + ':' + location.port);
+            var room = "{{ room.id }}";
+            var username = "{{ current_user.username }}";
+
+            // Join the room
+            socket.emit('join', { 'username': username, 'room': room });
+
+            // Receive messages
+            socket.on('message', (data) => {
+                var li = document.createElement("li");
+                var messageClass = data.author === username ? 'my-message' : 'other-message';
+                li.innerHTML = `<div class="message ${messageClass}"><span class="message-text"><strong>${data.author}:</strong> ${data.msg}</span><span class="message-time"> - ${data.time}</span></div>`;
+                document.getElementById("messages").appendChild(li);
+                // Auto-scroll to bottom
+                var messagesBox = document.querySelector('.messages-box');
+                messagesBox.scrollTop = messagesBox.scrollHeight;
+            });
+
+
+            // Send a message
+            document.getElementById("message_form").onsubmit = (event) => {
+                event.preventDefault(); // Prevent the form from submitting normally
+                var msg = document.getElementById("message_input").value;
+                socket.emit('message', { 'msg': msg, 'room': room });
+                document.getElementById("message_input").value = ''; // Clear the input field
+            };
+
+            // Leave the room
+            window.onbeforeunload = () => {
+                socket.emit('leave', { 'username': username, 'room': room });
+            };
+        });
+    </script>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="messages-box">
+            <ul id="messages">
+                {% for message in messages %}
+                    <li>
+                        <div class="message {% if message.author.username == current_user.username %}my-message{% else %}other-message{% endif %}">
+                            <span class="message-text"><strong>{{ message.author.username }}:</strong> {{ message.content }}</span>
+                            <span class="message-time"> - </span>
+                            <span class="message-time">{{ message.date_posted.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="form-container">
+            <form id="message_form">
+                <input id="message_input" autocomplete="off" required>
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

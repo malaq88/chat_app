@@ -1,0 +1,37 @@
+# Ambiente Virtual
+venv/
+env/
+*.pyc
+*.pyo
+__pycache__/
+
+# Configurações do IDE
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln
+*.swp
+
+# Arquivos de Log
+*.log
+
+# Arquivos de Banco de Dados
+*.sqlite3
+*.db
+
+# Arquivos do Sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de Backup
+*.bak
+*.tmp
+
+# Arquivos Sensíveis
+*.env
+*.secret
+
+# Diretórios de Dependências
+node_modules/
